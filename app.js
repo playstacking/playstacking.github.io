@@ -25,9 +25,29 @@ const games=[
 {title:"Temple Exploration",category:"Adventure",description:"Explore a mysterious temple, avoid hazards, and find the way out.",url:"https://www.open-games.org/games/temple-exploration/",icon:"◆",color:"yellow",tag:"Exploration"},
 {title:"Brick Breaker",category:"Arcade",description:"Clear the board with precise paddle control and quick reactions.",url:"https://www.open-games.org/games/brick-breaker/",icon:"▤",color:"pink",tag:"Arcade"},
 {title:"Ghost Escape",category:"Adventure",description:"Navigate a haunted maze and escape before the ghosts close in.",url:"https://www.open-games.org/games/ghost-escape/",icon:"◌",color:"purple",tag:"Maze"},
-{title:"High School Stories",category:"Adventure",description:"A short, open-source interactive story demo made for the browser.",url:"https://www.open-games.org/games/high-school-stories/",icon:"✎",color:"green",tag:"Story demo"}
+{title:"High School Stories",category:"Adventure",description:"A short, open-source interactive story demo made for the browser.",url:"https://www.open-games.org/games/high-school-stories/",icon:"✎",color:"green",tag:"Story demo"},
+{title:"Radius Raid",category:"Action",description:"An award-winning neon space shooter with powerups, enemy waves, and local high scores.",url:"https://play.js13kgames.com/radius-raid/",icon:"RR",color:"purple",tag:"Award winner"},
+{title:"UNDERRUN",category:"Action",description:"Explore a dark facility in an atmospheric 3D twin-stick shooter built in just 13KB.",url:"https://play.js13kgames.com/underrun/",icon:"UR",color:"navy",tag:"3D shooter"},
+{title:"Space Huggers",category:"Action",description:"A destructible run-and-gun roguelike with procedural levels and local co-op support.",url:"https://play.js13kgames.com/space-huggers/",icon:"SH",color:"coral",tag:"Run & gun"},
+{title:"Please Finish in 13th Place",category:"Racing",description:"A wonderfully strange faux-3D racer where winning means crossing the line in thirteenth.",url:"https://play.js13kgames.com/please-finish-in-13th-place/",icon:"13",color:"pink",tag:"Reverse racing"},
+{title:"Ninja vs EVILCORP",category:"Action",description:"Sneak, leap, and fight through a stylish corporate fortress in this compact platformer.",url:"https://play.js13kgames.com/ninja-vs-evilcorp/",icon:"NV",color:"green",tag:"Stealth action"},
+{title:"Q1K3",category:"Action",description:"A miniature first-person arena shooter that somehow fits its whole 3D world into 13KB.",url:"https://play.js13kgames.com/q1k3/",icon:"Q3",color:"yellow",tag:"Tiny FPS"},
+{title:"Galaxy Rider",category:"Racing",description:"Race a glowing hovercraft through fast, twisting tracks in a polished space challenge.",url:"https://play.js13kgames.com/galaxy-rider/",icon:"GR",color:"blue",tag:"Hover racing"},
+{title:"Maze of Space Goblins",category:"Adventure",description:"Navigate an eerie sci-fi maze, outsmart goblins, and make your way back to safety.",url:"https://play.js13kgames.com/the-maze-of-space-goblins/",icon:"MG",color:"purple",tag:"Sci-fi maze"},
+{title:"Welcome to Space",category:"Arcade",description:"A polished bite-sized space adventure praised for its fun, music, and presentation.",url:"https://play.js13kgames.com/welcome-to-space/",icon:"WS",color:"navy",tag:"Space arcade"},
+{title:"PACKABUNCHAS",category:"Puzzle",description:"Pack awkward cargo into tight spaces in a clever, satisfying spatial puzzle game.",url:"https://play.js13kgames.com/packabunchas/",icon:"PB",color:"yellow",tag:"Packing puzzle"},
+{title:"A Dark Room",category:"Adventure",description:"Begin beside a cold fire and uncover a deep, minimalist text adventure one choice at a time.",url:"https://adarkroom.doublespeakgames.com/",icon:"DR",color:"navy",tag:"Cult classic"},
+{title:"0h h1",category:"Puzzle",description:"Fill a grid with red and blue tiles while following three simple but devious rules.",url:"https://0hh1.com/",icon:"01",color:"coral",tag:"Logic puzzle"},
+{title:"0h n0",category:"Puzzle",description:"Use numbered clues and careful deduction to uncover every blue and red dot.",url:"https://0hn0.com/",icon:"0N",color:"blue",tag:"Logic puzzle"},
+{title:"BreakLock",category:"Puzzle",description:"A sleek hybrid of Mastermind and Android pattern locks with endless generated puzzles.",url:"https://maxwellito.github.io/breaklock/",icon:"BL",color:"pink",tag:"Code breaker"},
+{title:"Astray",category:"Puzzle",description:"Tilt a beautiful 3D maze and guide the marble safely through each compact challenge.",url:"https://wwwtyro.github.io/Astray/",icon:"AS",color:"green",tag:"3D marble maze"},
+{title:"Tower Game",category:"Arcade",description:"Drop moving blocks with perfect timing and build the tallest tower you can.",url:"https://iamkun.github.io/tower_game/",icon:"TG",color:"yellow",tag:"One-button skill"},
+{title:"HexGL",category:"Racing",description:"Pilot a futuristic anti-gravity racer through a gorgeous high-speed WebGL track.",url:"https://hexgl.bkcore.com/play/",icon:"HX",color:"blue",tag:"WebGL racer"},
+{title:"Clumsy Bird",category:"Arcade",description:"Thread a determined little bird through narrow gaps in this open-source arcade favorite.",url:"https://ellisonleao.github.io/clumsy-bird/",icon:"CB",color:"coral",tag:"High-score chase"},
+{title:"Sandspiel",category:"Sandbox",description:"Paint with sand, water, fire, plants, and dozens of materials in a living pixel sandbox.",url:"https://sandspiel.club/",icon:"SS",color:"pink",tag:"Falling sand"},
+{title:"Slow Roads",category:"Racing",description:"Cruise through an endless procedurally generated landscape with no timer and no pressure.",url:"https://slowroads.io/",icon:"SR",color:"green",tag:"Endless driving"}
 ];
-const categories=["All","Multiplayer","Arcade","Puzzle","Action","Adventure","Sports"];
+const categories=["All","Multiplayer","Arcade","Puzzle","Action","Adventure","Racing","Sports","Sandbox"];
 let category="All",query="",favorites=JSON.parse(localStorage.getItem("playstack-favorites")||"[]"),favoritesOnly=false;
 const $=id=>document.getElementById(id);
 function launch(url,title){const player=$("player");$("player-title").textContent=title||"Game";$("source-link").href=url;$("game-frame").src=url;player.showModal();document.body.classList.add("player-open")}
