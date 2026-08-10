@@ -70,7 +70,20 @@ let category="All",query="",favorites=JSON.parse(localStorage.getItem("playstack
 const $=id=>document.getElementById(id);
 function launch(url,title){const player=$("player");$("player-title").textContent=title||"Game";$("source-link").href=url;$("game-frame").src=url;player.showModal();document.body.classList.add("player-open")}
 function closePlayer(){const player=$("player");player.close();$("game-frame").src="about:blank";document.body.classList.remove("player-open")}
+async function toggleFullscreen(){
+  if(document.fullscreenElement||document.webkitFullscreenElement){
+    const exit=document.exitFullscreen||document.webkitExitFullscreen;
+    if(exit)await exit.call(document);
+    return;
+  }
+  const frame=$("game-frame");
+  const request=frame.requestFullscreen||frame.webkitRequestFullscreen||frame.msRequestFullscreen;
+  if(request){try{await request.call(frame);return}catch{}}
+  const player=$("player");
+  const fallback=player.requestFullscreen||player.webkitRequestFullscreen||player.msRequestFullscreen;
+  if(fallback)await fallback.call(player);
+}
 function renderFilters(){$("filters").innerHTML=categories.map(c=>`<button class="${c===category?"active":""}" data-category="${c}">${c}</button>`).join("")}
 function render(){const list=games.filter(g=>(category==="All"||(category==="Popular"?popularTitles.has(g.title):g.category===category))&&(`${g.title} ${g.category} ${g.description}`.toLowerCase().includes(query.toLowerCase()))&&(!favoritesOnly||favorites.includes(g.title)));$("games").innerHTML=list.map(g=>`<article class="game"><button class="heart ${favorites.includes(g.title)?"saved":""}" data-favorite="${g.title}" aria-label="Favorite ${g.title}">♥</button><button class="art ${g.color}" data-launch="${g.url}" data-title="${g.title}" aria-label="Play ${g.title}">${g.icon}</button><div class="details"><span class="meta">${g.category} · ${g.tag}</span><h3>${g.title}</h3><p>${g.description}</p><button class="launch" data-launch="${g.url}" data-title="${g.title}">Play here <span>□</span></button></div></article>`).join("");$("favorite-count").textContent=favorites.length;$("empty").hidden=list.length>0;$("favorites-button").style.textDecoration=favoritesOnly?"underline":"none"}
 document.addEventListener("click",e=>{const cb=e.target.closest("[data-category]");if(cb){category=cb.dataset.category;renderFilters();render()}const fav=e.target.closest("[data-favorite]");if(fav){const title=fav.dataset.favorite;favorites=favorites.includes(title)?favorites.filter(x=>x!==title):[...favorites,title];localStorage.setItem("playstack-favorites",JSON.stringify(favorites));render()}const play=e.target.closest("[data-launch]");if(play)launch(play.dataset.launch,play.dataset.title)});
-$("search").addEventListener("input",e=>{query=e.target.value;render()});$("favorites-button").onclick=()=>{favoritesOnly=!favoritesOnly;render()};$("surprise").onclick=()=>{const game=games[Math.floor(Math.random()*games.length)];launch(game.url,game.title)};$("reset").onclick=()=>{category="All";query="";favoritesOnly=false;$("search").value="";renderFilters();render()};$("close-player").onclick=closePlayer;$("player").addEventListener("close",()=>{$("game-frame").src="about:blank";document.body.classList.remove("player-open")});$("fullscreen").onclick=()=>$("player").requestFullscreen?.();renderFilters();render();
+$("search").addEventListener("input",e=>{query=e.target.value;render()});$("favorites-button").onclick=()=>{favoritesOnly=!favoritesOnly;render()};$("surprise").onclick=()=>{const game=games[Math.floor(Math.random()*games.length)];launch(game.url,game.title)};$("reset").onclick=()=>{category="All";query="";favoritesOnly=false;$("search").value="";renderFilters();render()};$("close-player").onclick=closePlayer;$("player").addEventListener("close",()=>{$("game-frame").src="about:blank";document.body.classList.remove("player-open")});$("fullscreen").onclick=toggleFullscreen;document.addEventListener("fullscreenchange",()=>{$("fullscreen").setAttribute("aria-label",document.fullscreenElement?"Exit fullscreen":"Fullscreen game")});renderFilters();render();
