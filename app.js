@@ -1,9 +1,21 @@
 const games=[
+{title:"OpenFront",category:"Multiplayer",description:"A huge real-time strategy battle where diplomacy, timing, and territory decide the winner.",url:"https://openfront.io/",icon:"◒",color:"coral",tag:"Massive RTS"},
+{title:"MK48",category:"Multiplayer",description:"Command a warship, collect upgrades, and fight real players across the open sea.",url:"https://mk48.io/",icon:"↯",color:"navy",tag:"Naval combat"},
+{title:"HaxBall",category:"Multiplayer",description:"A brilliantly simple mix of football and air hockey with public and private rooms.",url:"https://www.haxball.com/play",icon:"⚽",color:"blue",tag:"Real-time sports"},
+{title:"Kiomet",category:"Multiplayer",description:"Capture towers, build supply lines, and outplay rivals in a rapid strategy arena.",url:"https://kiomet.com/",icon:"♜",color:"purple",tag:"Strategy arena"},
+{title:"Freeciv Web",category:"Multiplayer",description:"Build cities, research technology, and lead a civilization against people or AI.",url:"https://www.freecivweb.org/",icon:"♟",color:"yellow",tag:"Civilization"},
+{title:"Lichess",category:"Multiplayer",description:"Fast, fair, open-source chess with matchmaking, tournaments, bots, and friends.",url:"https://lichess.org/",icon:"♞",color:"pink",tag:"Competitive chess"},
+{title:"TETR.IO",category:"Multiplayer",description:"Slick competitive block stacking with ranked matchmaking and private rooms.",url:"https://tetr.io/",icon:"▦",color:"blue",tag:"Ranked puzzle"},
+{title:"WorldGuessr",category:"Multiplayer",description:"Explore mystery locations and challenge friends to find where in the world you landed.",url:"https://worldguessr.com/",icon:"◎",color:"green",tag:"Geography"},
+{title:"Homegames",category:"Multiplayer",description:"A collection of tiny open-source multiplayer games with instant shared sessions.",url:"https://homegames.io/",icon:"⌂",color:"coral",tag:"Party collection"},
+{title:"Merchant Empires",category:"Multiplayer",description:"Trade, explore, and compete in a persistent open-source space economy.",url:"https://merchantempires.org/",icon:"◇",color:"navy",tag:"Space MMO"},
+{title:"Skribbl.io",category:"Multiplayer",description:"Draw a prompt while friends race to guess it, with easy private-room sharing.",url:"https://skribbl.io/",icon:"✎",color:"yellow",tag:"Party drawing"},
+{title:"Pokémon Showdown",category:"Multiplayer",description:"Build a team and jump straight into competitive monster battles in the browser.",url:"https://play.pokemonshowdown.com/",icon:"◉",color:"pink",tag:"Battle simulator"},
 {title:"2048",category:"Puzzle",description:"Slide numbered tiles, combine matches, and build your way to 2048.",url:"https://openarcade.github.io/2048/",icon:"20",color:"yellow",tag:"Open Arcade"},
 {title:"Hextris",category:"Puzzle",description:"A fast-paced hexagonal puzzle with serious one-more-run energy.",url:"https://hextris.io/",icon:"⬢",color:"coral",tag:"Fan favorite"},
 {title:"Ball & Wall",category:"Arcade",description:"Smash every brick in a crisp open-source Arkanoid-style challenge.",url:"https://budnix.github.io/ball-and-wall/",icon:"◉",color:"blue",tag:"Brick breaker"},
 {title:"Responsive Snake",category:"Arcade",description:"Classic Snake with particles, speed controls, pause, and bot mode.",url:"https://iamchrismiller.github.io/responsive-snake/example/",icon:"≈",color:"green",tag:"Classic"},
-{title:"TANX",category:"Action",description:"A polished 3D tank arena built with the open-source PlayCanvas engine.",url:"https://tanx.io/",icon:"▰",color:"navy",tag:"3D action"},
+{title:"TANX",category:"Multiplayer",description:"A polished 3D tank arena built with the open-source PlayCanvas engine.",url:"https://tanx.io/",icon:"▰",color:"navy",tag:"3D action"},
 {title:"Drill Bunny",category:"Action",description:"Drill beneath the surface in this charming Ludum Dare adventure.",url:"https://dreamshowadventures.github.io/LudumDare29/",icon:"▼",color:"pink",tag:"Adventure"},
 {title:"Custom Tetris",category:"Puzzle",description:"Change the rules, choose attacker and defender roles, then stack.",url:"https://ondras.github.io/custom-tetris/",icon:"▦",color:"purple",tag:"12 modes"},
 {title:"Fluid Table Tennis",category:"Sports",description:"Two-player table tennis powered by glowing fluid dynamics.",url:"https://anirudhjoshi.github.io/fluid_table_tennis/",icon:"↔",color:"coral",tag:"2 players"},
@@ -15,7 +27,7 @@ const games=[
 {title:"Ghost Escape",category:"Adventure",description:"Navigate a haunted maze and escape before the ghosts close in.",url:"https://www.open-games.org/games/ghost-escape/",icon:"◌",color:"purple",tag:"Maze"},
 {title:"High School Stories",category:"Adventure",description:"A short, open-source interactive story demo made for the browser.",url:"https://www.open-games.org/games/high-school-stories/",icon:"✎",color:"green",tag:"Story demo"}
 ];
-const categories=["All","Arcade","Puzzle","Action","Adventure","Sports"];
+const categories=["All","Multiplayer","Arcade","Puzzle","Action","Adventure","Sports"];
 let category="All",query="",favorites=JSON.parse(localStorage.getItem("playstack-favorites")||"[]"),favoritesOnly=false;
 const $=id=>document.getElementById(id);
 function launch(url,title){const player=$("player");$("player-title").textContent=title||"Game";$("source-link").href=url;$("game-frame").src=url;player.showModal();document.body.classList.add("player-open")}
