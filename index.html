@@ -6,6 +6,7 @@
   <meta name="description" content="Playstack — a hand-picked collection of brilliant free browser games.">
   <title>Playstack — Big games, zero hassle</title>
   <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="player.css">
 </head>
 <body>
   <nav class="topbar">
@@ -20,9 +21,9 @@
         <h1>BIG GAMES.<br><em>ZERO</em> HASSLE.</h1>
         <p class="intro">A hand-picked stack of brilliant browser games. No downloads, no digging—just pick one and play.</p>
         <div class="hero-actions"><a href="#library">Browse all games ↓</a><button id="surprise">◆ Surprise me</button></div>
-        <p class="proof"><strong>12 curated picks</strong> · Official browser editions</p>
+        <p class="proof"><strong>15 playable picks</strong> · Open-source browser editions</p>
       </div>
-      <button class="featured" data-url="https://hextris.github.io/hextris/">
+      <button class="featured" data-launch="https://hextris.io/" data-title="Hextris">
         <small>GAME OF THE WEEK</small><div class="feature-art">⬢</div>
         <div class="feature-title"><span><i>ARCADE · PUZZLE</i><strong>HEXTRIS</strong></span><b>▶</b></div>
         <p>Fast hands. Sharp mind. One more run.</p>
@@ -42,7 +43,12 @@
     </section>
   </main>
 
-  <footer><a class="brand" href="#top"><span>P</span>PLAYSTACK</a><p>Built for breaks, commutes, and “just one round.”</p><small>© 2026 · Games belong to their respective creators.</small></footer>
+  <footer><a class="brand" href="#top"><span>P</span>PLAYSTACK</a><p>Built for breaks, commutes, and “just one round.”</p><small>© 2026 · Open-source games belong to their creators.</small></footer>
+  <dialog id="player" aria-label="Game player">
+    <div class="player-bar"><div><small>NOW PLAYING</small><strong id="player-title">Game</strong></div><div><button id="fullscreen" aria-label="Fullscreen game">⛶</button><button id="close-player" aria-label="Close game">×</button></div></div>
+    <div class="player-stage"><iframe id="game-frame" title="Embedded game" allow="autoplay; fullscreen; gamepad" allowfullscreen></iframe><div class="player-loading">LOADING GAME…</div></div>
+    <div class="player-foot"><span>Tip: click inside the game before using keyboard controls.</span><a id="source-link" target="_blank" rel="noopener noreferrer">Open original ↗</a></div>
+  </dialog>
   <script src="app.js"></script>
 </body>
 </html>
