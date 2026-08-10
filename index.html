@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Playstack — a hand-picked collection of brilliant free browser games.">
+  <title>Playstack — Big games, zero hassle</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <nav class="topbar">
+    <a class="brand" href="#top"><span>P</span>PLAYSTACK</a>
+    <div><a href="#library">Library</a><button id="favorites-button">♥ Favorites <b id="favorite-count">0</b></button></div>
+  </nav>
+
+  <main>
+    <section class="hero" id="top">
+      <div>
+        <p class="eyebrow">— YOUR BREAK STARTS HERE</p>
+        <h1>BIG GAMES.<br><em>ZERO</em> HASSLE.</h1>
+        <p class="intro">A hand-picked stack of brilliant browser games. No downloads, no digging—just pick one and play.</p>
+        <div class="hero-actions"><a href="#library">Browse all games ↓</a><button id="surprise">◆ Surprise me</button></div>
+        <p class="proof"><strong>12 curated picks</strong> · Official browser editions</p>
+      </div>
+      <button class="featured" data-url="https://hextris.github.io/hextris/">
+        <small>GAME OF THE WEEK</small><div class="feature-art">⬢</div>
+        <div class="feature-title"><span><i>ARCADE · PUZZLE</i><strong>HEXTRIS</strong></span><b>▶</b></div>
+        <p>Fast hands. Sharp mind. One more run.</p>
+      </button>
+    </section>
+
+    <section class="library" id="library">
+      <div class="library-head"><div><p class="eyebrow">— THE GOOD STUFF</p><h2>Pick your next obsession.</h2></div><label class="search">⌕ <input id="search" placeholder="Search games..." aria-label="Search games"></label></div>
+      <div class="filters" id="filters"></div>
+      <div class="games" id="games"></div>
+      <div class="empty" id="empty" hidden><h3>No games found</h3><p>Try another search or clear your filters.</p><button id="reset">Reset library</button></div>
+    </section>
+
+    <section class="manifesto">
+      <p class="eyebrow">— WHY PLAYSTACK</p><h2>LESS SEARCHING.<br><em>MORE PLAYING.</em></h2>
+      <div class="benefits"><article><b>01</b><h3>Hand-picked</h3><p>Every title earns its spot. No endless pages of filler.</p></article><article><b>02</b><h3>Instant launch</h3><p>Browser-first games with no installer and no app store detour.</p></article><article><b>03</b><h3>Creator-friendly</h3><p>Games open on their official sites, where the makers get the credit.</p></article></div>
+    </section>
+  </main>
+
+  <footer><a class="brand" href="#top"><span>P</span>PLAYSTACK</a><p>Built for breaks, commutes, and “just one round.”</p><small>© 2026 · Games belong to their respective creators.</small></footer>
+  <script src="app.js"></script>
+</body>
+</html>
