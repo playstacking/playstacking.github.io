@@ -181,7 +181,7 @@ async function load_data() {
   }
 
   let quality = quality_select.value;
-  let data_url = `/game/data_${quality}.tar.gz`;
+  let data_url = `./game/data_${quality}.tar.gz`;
   await extract_tar(data_url, "/data", true);
 }
 
