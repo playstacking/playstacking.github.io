@@ -107,7 +107,7 @@ const categories=["All","Popular","Multiplayer","Arcade","Puzzle","Action","Adve
 let category="All",query="",favorites=JSON.parse(localStorage.getItem("playstack-favorites")||"[]").filter(title=>games.some(game=>game.title===title)),favoritesOnly=false;
 localStorage.setItem("playstack-favorites",JSON.stringify(favorites));
 const $=id=>document.getElementById(id);
-function launch(url,title,source){const player=$("player");$("player-title").textContent=title||"Game";$("source-link").href=source||url;$("game-frame").src=url;player.showModal();document.body.classList.add("player-open")}
+function launch(url,title,source){const player=$("player");const minecraft=title==="Minecraft Web";$("player-title").textContent=title||"Game";const link=$("source-link");link.hidden=minecraft;link.style.display=minecraft?"none":"";link.href=minecraft?"#":(source||url);const frame=$("game-frame");frame.src=url;player.showModal();document.body.classList.add("player-open")}
 function closePlayer(){const player=$("player");player.close();$("game-frame").src="about:blank";document.body.classList.remove("player-open")}
 async function toggleFullscreen(){
   if(document.fullscreenElement||document.webkitFullscreenElement){
