@@ -1,0 +1,60 @@
+name: Build self-hosted shapez
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - .github/workflows/build-shapez.yml
+permissions:
+  contents: write
+concurrency:
+  group: playstack-shapez
+  cancel-in-progress: false
+jobs:
+  shapez:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          repository: tobspr-games/shapez-community-edition
+          ref: master
+          path: upstream-shapez
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: upstream-shapez/package-lock.json
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Install build prerequisites
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg
+      - name: Install dependencies
+        working-directory: upstream-shapez
+        run: npm ci
+      - name: Build web version
+        working-directory: upstream-shapez
+        run: npx gulp --cwd gulp build.web.full
+      - name: Install web output
+        run: |
+          set -euo pipefail
+          test -s upstream-shapez/build/index.html
+          mkdir -p games/shapez-build
+          find games/shapez-build -mindepth 1 -maxdepth 1 -exec rm -rf {} +
+          cp -a upstream-shapez/build/. games/shapez-build/
+          test -s games/shapez-build/index.html
+          if find games/shapez-build -type f -size +95M | grep .; then exit 1; fi
+          rm -rf upstream-shapez
+      - name: Commit built game
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add games/shapez-build
+          if ! git diff --cached --quiet; then
+            git commit -m 'Deploy source-built shapez'
+            git pull --rebase origin main
+            git push origin HEAD:main
+          fi
