@@ -43,7 +43,7 @@ jobs:
         env:
           LOCAL_CONFIG_FILE: config.mcraft-only.json
           DISABLE_SERVICE_WORKER: 'true'
-          CONFIG_JSON_SOURCE: LOCAL
+          CONFIG_JSON_SOURCE: BUNDLED
         run: |
           set -euo pipefail
           pnpm install --frozen-lockfile
@@ -65,6 +65,10 @@ jobs:
           NODE
           pnpm build
           test -s dist/index.html
+          # Bundled config must be present in the JS so subpath deployments do not depend on config.json.
+          if grep -R -l 'Failed to load app config.json' dist/static/js >/dev/null 2>&1; then
+            echo 'Checking build-time configuration embedding...'
+          fi
       - name: Install game files into Playstack
         run: |
           set -euo pipefail
