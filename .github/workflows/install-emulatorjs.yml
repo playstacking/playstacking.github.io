@@ -30,7 +30,7 @@ jobs:
           test -d games/emulatorjs/data/cores
           # EmulatorJS Git sources do not include the precompiled libretro WASM core archives.
           # Mirror the official stable builds needed for N64, including iOS fallback.
-          for core in mupen64plus_next parallel-n64; do
+          for core in mupen64plus_next parallel_n64; do
             for variant in "-wasm.data" "-legacy-wasm.data"; do
               file="${core}${variant}"
               url="https://cdn.emulatorjs.org/stable/data/cores/${file}"
@@ -43,7 +43,7 @@ jobs:
             done
           done
           test -s games/emulatorjs/data/cores/mupen64plus_next-wasm.data
-          test -s games/emulatorjs/data/cores/parallel-n64-wasm.data
+          test -s games/emulatorjs/data/cores/parallel_n64-wasm.data
           if find games/emulatorjs/data -type f -size +95M | grep .; then
             echo 'Asset exceeds GitHub file-size limit'
             exit 1
