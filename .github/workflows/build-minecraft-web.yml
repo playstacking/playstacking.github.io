@@ -1,0 +1,75 @@
+name: Build self-hosted Minecraft Web Client
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - .github/workflows/build-minecraft-web.yml
+
+permissions:
+  contents: write
+
+concurrency:
+  group: minecraft-web-source-build
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Check out Playstack
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - name: Check out upstream Minecraft Web Client source
+        uses: actions/checkout@v4
+        with:
+          repository: zardoy/minecraft-web-client
+          ref: next
+          path: upstream-minecraft
+          persist-credentials: false
+          submodules: false
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.32.1
+      - name: Build from source
+        working-directory: upstream-minecraft
+        env:
+          LOCAL_CONFIG_FILE: config.mcraft-only.json
+          DISABLE_SERVICE_WORKER: 'true'
+          CONFIG_JSON_SOURCE: LOCAL
+        run: |
+          set -euo pipefail
+          pnpm install --frozen-lockfile
+          pnpm build
+          test -s dist/index.html
+      - name: Install game files into Playstack
+        run: |
+          set -euo pipefail
+          mkdir -p games/minecraft-client
+          find games/minecraft-client -mindepth 1 -maxdepth 1 -exec rm -rf {} +
+          cp -a upstream-minecraft/dist/. games/minecraft-client/
+          touch games/minecraft-client/.nojekyll
+          if find games/minecraft-client -type f -size +95M | grep .; then
+            echo 'GitHub Pages has a 100 MB per-file limit.' >&2
+            exit 1
+          fi
+          test -s games/minecraft-client/index.html
+          rm -rf upstream-minecraft
+      - name: Commit generated static client
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A games/minecraft-client/
+          if ! git diff --cached --quiet; then
+            git commit -m 'Deploy source-built Minecraft Web Client to Playstack'
+            git pull --rebase origin main
+            git push origin HEAD:main
+          fi
