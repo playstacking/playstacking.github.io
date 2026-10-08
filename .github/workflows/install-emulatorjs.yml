@@ -1,0 +1,45 @@
+name: Install self-hosted EmulatorJS
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - .github/workflows/install-emulatorjs.yml
+permissions:
+  contents: write
+concurrency:
+  group: playstack-emulatorjs
+  cancel-in-progress: false
+jobs:
+  emulator:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          repository: EmulatorJS/EmulatorJS
+          ref: main
+          path: upstream-emulatorjs
+          persist-credentials: false
+      - name: Copy runtime and cores (no ROMs)
+        run: |
+          set -euo pipefail
+          mkdir -p games/emulatorjs/data
+          cp -a upstream-emulatorjs/data/. games/emulatorjs/data/
+          test -s games/emulatorjs/data/loader.js
+          test -d games/emulatorjs/data/cores
+          if find games/emulatorjs/data -type f -size +95M | grep .; then
+            echo 'Asset exceeds GitHub file-size limit'
+            exit 1
+          fi
+          rm -rf upstream-emulatorjs
+      - name: Commit emulator
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add games/emulatorjs
+          if ! git diff --cached --quiet; then
+            git commit -m 'Self-host EmulatorJS runtime and cores'
+            git pull --rebase origin main
+            git push origin HEAD:main
+          fi
