@@ -47,22 +47,8 @@ jobs:
         run: |
           set -euo pipefail
           pnpm install --frozen-lockfile
-          # Use the upstream project's well-tested single-player protocol for new worlds.
-          # Do NOT rewrite existing world files: newer saves must stay untouched.
-          node - <<'NODE'
-          const fs = require('fs');
-          const path = 'src/defaultLocalServerOptions.js';
-          const contents = fs.readFileSync(path, 'utf8');
-          if (!contents.includes("'version': '1.18',") || !contents.includes("versionMajor: '1.18'")) {
-            throw new Error('Upstream world defaults changed; review the compatibility patch.');
-          }
-          fs.writeFileSync(path, contents.replace("'version': '1.18',", "'version': '1.21.4',").replace("versionMajor: '1.18'", "versionMajor: '1.21'"));
-          const versionsPath = 'src/supportedVersions.mjs';
-          const versions = fs.readFileSync(versionsPath, 'utf8');
-          const oldThreshold = "FORBIDDEN_VERSION_THRESHOLD_SINGLEPLAYER = '1.21.7'";
-          if (!versions.includes(oldThreshold)) throw new Error('Upstream supported-version policy changed; review the compatibility patch.');
-          fs.writeFileSync(versionsPath, versions.replace(oldThreshold, "FORBIDDEN_VERSION_THRESHOLD_SINGLEPLAYER = '1.21.5'"));
-          NODE
+          # Preserve upstream's tested default world/server settings.
+          # Do not silently convert saved worlds to another protocol version.
           pnpm build
           test -s dist/index.html
           # Bundled config must be present in the JS so subpath deployments do not depend on config.json.
