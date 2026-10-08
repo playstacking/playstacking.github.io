@@ -1,0 +1,70 @@
+name: Mirror open-source SuperTuxKart WASM build
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - .github/workflows/install-supertuxkart.yml
+permissions:
+  contents: write
+concurrency:
+  group: playstack-supertuxkart
+  cancel-in-progress: false
+jobs:
+  install:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          repository: ading2210/stk-code
+          ref: wasm
+          path: upstream-stk
+          persist-credentials: false
+      - name: Mirror author's compiled WASM runtime and compressed low-quality assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          target=games/supertuxkart-build
+          mkdir -p "$target/game"
+          cp upstream-stk/wasm/web/{index.html,script.js,supertuxkart_64.png} "$target/"
+          echo '{"ws_enabled":false,"ws_proxy":""}' > "$target/config.json"
+          curl -fLsS --retry 4 --connect-timeout 20 'https://supertuxkart.pages.dev/game/supertuxkart.js' -o "$target/game/supertuxkart.js"
+          curl -fLsS --retry 4 --connect-timeout 20 'https://supertuxkart.pages.dev/game/supertuxkart.wasm' -o "$target/game/supertuxkart.wasm"
+          curl -fLsS --retry 4 --connect-timeout 20 'https://supertuxkart.pages.dev/game/data_low.tar.gz.manifest' -o "$target/game/data_low.tar.gz.manifest"
+          test -s "$target/game/supertuxkart.js"
+          test -s "$target/game/supertuxkart.wasm"
+          python3 - <<'PY'
+          import pathlib, re
+          root=pathlib.Path('games/supertuxkart-build')
+          manifest=(root/'game/data_low.tar.gz.manifest').read_text().splitlines()
+          assert manifest and manifest[0].isdigit(), 'Missing valid asset manifest'
+          chunks=[x for x in manifest[1:] if x.strip()]
+          assert chunks and all(re.fullmatch(r'data_low\.tar\.gz\.\d+', x) for x in chunks), 'Bad asset manifest'
+          (root/'asset-list.txt').write_text('\n'.join(chunks)+'\n')
+          html=(root/'index.html').read_text()
+          html=html.replace('href="/favicon.ico"','href="./supertuxkart_64.png"').replace('src="/game/supertuxkart.js"','src="./game/supertuxkart.js"').replace('src="/script.js"','src="./script.js"')
+          html=html.replace('<option value="mid">Medium (171MiB)</option>','').replace('<option value="high">High (249MiB)</option>','')
+          (root/'index.html').write_text(html)
+          js=(root/'script.js').read_text().replace('"/game/data_${quality}.tar.gz"','"./game/data_${quality}.tar.gz"').replace('"/config.json"','"./config.json"')
+          (root/'script.js').write_text(js)
+          PY
+          while IFS= read -r filename; do
+            curl -fLsS --retry 4 --connect-timeout 20 "https://supertuxkart.pages.dev/game/$filename" -o "$target/game/$filename"
+            test -s "$target/game/$filename"
+          done < "$target/asset-list.txt"
+          rm "$target/asset-list.txt"
+          find "$target" -type f -size +95M -print -quit | grep -q . && { echo 'File above 95MB'; exit 1; } || true
+          rm -rf upstream-stk
+      - name: Commit locally hosted build
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add games/supertuxkart-build
+          if ! git diff --cached --quiet; then
+            git commit -m 'Add self-hosted SuperTuxKart WebAssembly port'
+            git pull --rebase origin main
+            git push origin HEAD:main
+          fi
