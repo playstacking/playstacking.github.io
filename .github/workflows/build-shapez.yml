@@ -37,6 +37,9 @@ jobs:
           npm install --global yarn@1.22.22
           yarn install --frozen-lockfile
           cd gulp && yarn install --frozen-lockfile
+      - name: Generate local build configuration
+        run: |
+          cp upstream-shapez/src/js/core/config.local.template.js upstream-shapez/src/js/core/config.local.js
       - name: Build web version
         working-directory: upstream-shapez
         run: cd gulp && yarn gulp build.web-shapezio
