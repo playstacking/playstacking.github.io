@@ -49,6 +49,18 @@
     <div class="player-stage"><iframe id="game-frame" title="Embedded game" allow="autoplay; fullscreen; gamepad" allowfullscreen></iframe><div class="player-loading">LOADING GAME&hellip;</div></div>
     <div class="player-foot"><span>Tip: click inside the game before using keyboard controls.</span><a id="source-link" target="_blank" rel="noopener noreferrer">Open original &#8599;</a></div>
   </dialog>
-  <script src="app.js?v=16"></script>
+  <script>
+  // On iPad, run the Minecraft WebGL client in its own full tab surface
+  // instead of inside the site's modal iframe. No new browser tab is created.
+  document.addEventListener('click', function (event) {
+    if (!/iPad|Macintosh/.test(navigator.userAgent) || navigator.maxTouchPoints < 2) return;
+    const game = event.target.closest('[data-launch]');
+    if (!game || !game.getAttribute('data-launch').includes('games/minecraft-client/')) return;
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    location.assign(new URL(game.getAttribute('data-launch'), document.baseURI).href);
+  }, true);
+  </script>
+  <script src="app.js?v=17"></script>
 </body>
 </html>
