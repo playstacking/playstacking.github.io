@@ -50,6 +50,15 @@ jobs:
           mkdir -p games/shapez-build
           find games/shapez-build -mindepth 1 -maxdepth 1 -exec rm -rf {} +
           cp -a upstream-shapez/build/. games/shapez-build/
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          entry = Path('games/shapez-build/index.html')
+          html = entry.read_text()
+          html, count = re.subn(r'/v/[A-Za-z0-9_-]+/', './', html)
+          if count < 2: raise RuntimeError('Expected versioned root asset references; inspect upstream changes')
+          entry.write_text(html)
+          PY
           test -s games/shapez-build/index.html
           if find games/shapez-build -type f -size +95M | grep .; then exit 1; fi
           rm -rf upstream-shapez
