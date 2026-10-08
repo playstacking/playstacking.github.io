@@ -1,0 +1,5 @@
+EaglercraftX 1.8 u53 by LAX1DUDE and contributors. Vendor client files are preserved.
+Release: https://eaglercraft.com/p/news/eaglercraftx-u53
+Web build: https://cdn.eaglercraft.ru/dl/1.8.8/web/u53_web.zip
+Source workspace: https://gitflic.ru/project/lax1dude/eaglercraft-1_8-workspace
+Download SHA-256: 843095ac68cb01068e87df16b3960720c253747ae985ed7233525c279722c801
