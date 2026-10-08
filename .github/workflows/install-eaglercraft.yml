@@ -1,0 +1,44 @@
+name: Install self-hosted Eaglercraft client
+
+on:
+  push:
+    paths:
+      - .github/workflows/install-eaglercraft.yml
+
+permissions:
+  contents: write
+
+jobs:
+  install:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download and verify EaglercraftX 1.8 u53
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --fail --location --retry 3 --output /tmp/eaglercraft-u53.zip 'https://cdn.eaglercraft.ru/dl/1.8.8/web/u53_web.zip'
+          echo '843095ac68cb01068e87df16b3960720c253747ae985ed7233525c279722c801  /tmp/eaglercraft-u53.zip' | sha256sum --check
+          mkdir -p /tmp/eaglercraft-client
+          unzip -q /tmp/eaglercraft-u53.zip -d /tmp/eaglercraft-client
+          client_index="$(find /tmp/eaglercraft-client -type f -name index.html -exec dirname {} \; | while read -r dir; do if [ -f "$dir/classes.js" ] && [ -f "$dir/assets.epk" ]; then printf '%s\n' "$dir"; break; fi; done)"
+          test -n "$client_index"
+          mkdir -p games/eaglercraft
+          cp "$client_index/index.html" "$client_index/classes.js" "$client_index/assets.epk" games/eaglercraft/
+          if [ -f "$client_index/classes.js.map" ]; then cp "$client_index/classes.js.map" games/eaglercraft/; fi
+          if [ -f "$client_index/favicon.png" ]; then cp "$client_index/favicon.png" games/eaglercraft/; fi
+          test -d "$client_index/lang"
+          cp -a "$client_index/lang" games/eaglercraft/
+          test -s games/eaglercraft/classes.js
+          test -s games/eaglercraft/assets.epk
+      - name: Commit client to the site
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add games/eaglercraft
+          if ! git diff --cached --quiet; then
+            git commit -m 'Add self-hosted EaglercraftX client'
+            git push origin HEAD:main
+          fi
