@@ -17,15 +17,14 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/checkout@v4
         with:
-          repository: tobspr-games/shapez-community-edition
+          repository: tobspr-games/shapez.io
           ref: master
           path: upstream-shapez
           persist-credentials: false
       - uses: actions/setup-node@v4
         with:
-          node-version: '22'
-          cache: npm
-          cache-dependency-path: upstream-shapez/package-lock.json
+          node-version: '16'
+          
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
@@ -34,10 +33,13 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y ffmpeg
       - name: Install dependencies
         working-directory: upstream-shapez
-        run: npm ci
+        run: |
+          npm install --global yarn@1.22.22
+          yarn install --frozen-lockfile
+          cd gulp && yarn install --frozen-lockfile
       - name: Build web version
         working-directory: upstream-shapez
-        run: npx gulp --cwd gulp build.web.full
+        run: cd gulp && yarn gulp build.web-shapezio
       - name: Install web output
         run: |
           set -euo pipefail
