@@ -1,0 +1,63 @@
+name: Build Playstack OpenTTD browser game
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - .github/workflows/build-openttd.yml
+permissions:
+  contents: write
+concurrency:
+  group: playstack-openttd
+  cancel-in-progress: false
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    container: emscripten/emsdk:6.0.1
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          repository: YoungY620/openttd-web
+          ref: main
+          path: upstream
+          persist-credentials: false
+      - name: Build host and WebAssembly game
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp upstream/OpenTTD/os/emscripten/ports/liblzma.py /emsdk/upstream/emscripten/tools/ports/contrib/liblzma.py
+          mkdir -p upstream/OpenTTD/vendor/baseset
+          curl -fLsS https://cdn.openttd.org/opengfx-releases/7.1/opengfx-7.1-all.zip -o /tmp/gfx.zip
+          python3 -c "import zipfile;zipfile.ZipFile('/tmp/gfx.zip').extractall('/tmp/gfx')"
+          tar -C /tmp -xf /tmp/gfx/opengfx-7.1.tar
+          cp /tmp/opengfx-7.1/* upstream/OpenTTD/vendor/baseset/
+          curl -fLsS https://cdn.openttd.org/opensfx-releases/1.0.3/opensfx-1.0.3-all.zip -o /tmp/sfx.zip
+          python3 -c "import zipfile;zipfile.ZipFile('/tmp/sfx.zip').extractall('/tmp/sfx')"
+          tar -C /tmp -xf /tmp/sfx/opensfx-1.0.3.tar
+          cp /tmp/opensfx-1.0.3/* upstream/OpenTTD/vendor/baseset/
+          cmake -S upstream/OpenTTD -B upstream/build-host -DOPTION_TOOLS_ONLY=ON
+          cmake --build upstream/build-host -j 4 --target tools
+          emcmake cmake -S upstream/OpenTTD -B upstream/build -DHOST_BINARY_DIR="$PWD/upstream/build-host" -DCMAKE_BUILD_TYPE=Release -DOPTION_USE_ASSERTS=OFF
+          cmake --build upstream/build -j 4 --target openttd
+          mkdir -p games/openttd-build
+          cp upstream/build/openttd.html games/openttd-build/index.html
+          cp upstream/build/openttd.js upstream/build/openttd.wasm upstream/build/openttd.data games/openttd-build/
+          cp upstream/OpenTTD/os/emscripten/kimi.js games/openttd-build/
+          touch games/openttd-build/.nojekyll
+          test -s games/openttd-build/index.html
+          test -s games/openttd-build/openttd.wasm
+          if find games/openttd-build -type f -size +95M | grep .; then exit 1; fi
+          rm -rf upstream
+      - name: Publish local build
+        shell: bash
+        run: |
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add games/openttd-build
+          if ! git diff --cached --quiet; then
+            git commit -m 'Deploy OpenTTD WebAssembly build'
+            git pull --rebase origin main
+            git push origin HEAD:main
+          fi
