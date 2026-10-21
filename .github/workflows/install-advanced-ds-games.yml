@@ -41,6 +41,7 @@ jobs:
           # Browser users only get local time-trial racing; WiFi is unsupported.
           sed -i 's/Wifi_Update();/(void)0;/' upstream-kart/source/network/multiplayer.c
           sed -i 's/Wifi_Update();/(void)0;/' upstream-kart/source/core/main.c
+          sed -i 's/Wifi_GetData(WIFIGETDATA_MACADDRESS, 6, macAddr);/memset(macAddr, 0, sizeof(macAddr));/' upstream-kart/source/ui/multiplayer_lobby.c
           sed -i 's/Wifi_GetData(WIFIGETDATA_MACADDRESS, 6, macAddr);/memset(macAddr, 0, sizeof(macAddr));/' upstream-kart/source/network/multiplayer.c
           # Legacy dswifi scanning APIs were removed in libnds 2.0. The web
           # emulator has no compatible DS local-WiFi transport, so compile an
