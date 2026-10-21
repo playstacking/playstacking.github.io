@@ -5,13 +5,24 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="Playstack &mdash; a hand-picked collection of brilliant free browser games.">
   <title>Playstack &mdash; Big games, zero hassle</title>
-  <link rel="stylesheet" href="style.css?v=5">
+  <link rel="stylesheet" href="style.css?v=6">
   <link rel="stylesheet" href="player.css?v=6">
+<style>
+  .emulator-spotlight{max-width:1240px;margin:0 auto 35px;padding:35px 46px;background:#d9f3dc;border:3px solid #181714}
+  .emulator-spotlight h2{font-size:clamp(40px,5vw,68px)}
+  .emulator-spotlight p{line-height:1.5}
+  .emulator-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:24px 0}
+  .emulator-grid a{background:#f4f0e8;border:2px solid #181714;box-shadow:3px 3px 0 #181714;padding:17px 14px;color:#181714;font-weight:900;text-decoration:none}
+  .emulator-grid a:hover,.emulator-grid a:focus-visible{background:#f5d54a}
+  .emulator-spotlight p a{font-weight:900;color:#144c2a}
+  @media(max-width:900px){.emulator-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.emulator-spotlight{padding:28px 22px}}
+  @media(max-width:580px){.emulator-spotlight{padding:24px 16px}.emulator-grid a{font-size:14px;padding:13px 10px}.topbar>div>a.nav-emulators{display:inline-block;font-size:12px}.topbar>div{gap:12px}.topbar button{font-size:12px}}
+  </style>
 </head>
 <body>
   <nav class="topbar">
     <a class="brand" href="#top"><span>P</span>PLAYSTACK</a>
-    <div><a href="#library">Library</a><button id="favorites-button">&#9829; Favorites <b id="favorite-count">0</b></button></div>
+    <div><a class="nav-emulators" href="#emulators">Emulators</a><a href="#library">Library</a><button id="favorites-button">&#9829; Favorites <b id="favorite-count">0</b></button></div>
   </nav>
 
   <main>
@@ -28,6 +39,22 @@
         <div class="feature-title"><span><i>RACING &middot; TIME TRIAL</i><strong>POLYTRACK</strong></span><b>&#9654;</b></div>
         <p>Build tracks. Chase milliseconds. One more run.</p>
       </button>
+    </section>
+
+    <section class="emulator-spotlight" id="emulators" aria-labelledby="emulators-title">
+      <p class="eyebrow">&mdash; NEW &middot; OCTOBER 21, 2026</p>
+      <h2 id="emulators-title">CONSOLE EMULATORS</h2>
+      <p>Choose a console to load a game file you own and have permission to use. Commercial games are not included.</p>
+      <div class="emulator-grid">
+        <a href="games/emulators/index.html?system=nds">Nintendo DS &#8594;</a>
+        <a href="games/emulators/index.html?system=n64">Nintendo 64 &#8594;</a>
+        <a href="games/emulators/index.html?system=gba">Game Boy Advance &#8594;</a>
+        <a href="games/emulators/index.html?system=psx">PlayStation 1 &#8594;</a>
+        <a href="games/emulators/index.html?system=psp">PSP &#8594;</a>
+        <a href="games/emulators/index.html?system=snes">Super Nintendo &#8594;</a>
+        <a href="games/emulators/index.html?system=nes">NES &#8594;</a>
+      </div>
+      <p>Hosted open-source games: <a href="games/shapez/index.html">shapez</a> and <a href="games/openttd/index.html">OpenTTD</a>.</p>
     </section>
 
     <section class="library" id="library">
@@ -61,6 +88,6 @@
     location.assign(new URL(game.getAttribute('data-launch'), document.baseURI).href);
   }, true);
   </script>
-  <script src="app.js?v=19"></script>
+  <script src="app.js?v=20"></script>
 </body>
 </html>
