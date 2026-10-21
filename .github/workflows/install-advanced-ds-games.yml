@@ -61,7 +61,7 @@ jobs:
           EOF
           docker run --rm -v "$GITHUB_WORKSPACE":/workspace -w /workspace/upstream-kart \
             -e DEVKITPRO=/opt/devkitpro -e DEVKITARM=/opt/devkitpro/devkitARM \
-            devkitpro/devkitarm:latest make -j2
+            devkitpro/devkitarm:latest make -j1
           find upstream-kart -maxdepth 1 -name '*.nds' -type f -size +100k
       - name: Download stable DS Spelunky build and verify licenses
         run: |
