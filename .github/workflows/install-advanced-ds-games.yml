@@ -1,0 +1,89 @@
+name: Build and install advanced DS homebrew games
+on:
+  pull_request:
+    paths:
+      - .github/workflows/install-advanced-ds-games.yml
+      - games/emulators/index.html
+      - games/ds-homebrew/README.md
+      - tests/advanced-ds.test.cjs
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/install-advanced-ds-games.yml
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: playstack-advanced-ds-games
+  cancel-in-progress: false
+jobs:
+  install:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          repository: Bahey-shalash/Kart_Mania
+          ref: dbd9b747dd0701d89a97a3c3f08625170b1b95e6
+          path: upstream-kart
+          persist-credentials: false
+      - name: Compile original Kart Mania game using devkitPro
+        run: |
+          set -euo pipefail
+          docker run --rm -v "$GITHUB_WORKSPACE":/workspace -w /workspace/upstream-kart \
+            -e DEVKITPRO=/opt/devkitpro -e DEVKITARM=/opt/devkitpro/devkitARM \
+            devkitpro/devkitarm:latest make -j2
+          find upstream-kart -maxdepth 1 -name '*.nds' -type f -size +100k
+      - name: Download stable DS Spelunky build and verify licenses
+        run: |
+          set -euo pipefail
+          mkdir -p games/ds-homebrew/licenses
+          cp "$(find upstream-kart -maxdepth 1 -name '*.nds' -type f -print -quit)" games/ds-homebrew/kart-mania.nds
+          curl -fLsS --retry 3 \
+            'https://raw.githubusercontent.com/Bahey-shalash/Kart_Mania/dbd9b747dd0701d89a97a3c3f08625170b1b95e6/LICENSE' \
+            -o games/ds-homebrew/licenses/KartMania-MIT.txt
+          curl -fLsS --retry 3 \
+            'https://github.com/dbeef/spelunky-ds/releases/download/1.0/spelunkyds.nds.zip' \
+            -o /tmp/spelunkyds-v1.zip
+          curl -fLsS --retry 3 \
+            'https://raw.githubusercontent.com/dbeef/spelunky-ds/1.0/LICENSE' \
+            -o games/ds-homebrew/licenses/SpelunkyDS-Full-License.txt
+          python3 - <<'PY'
+          import zipfile
+          from pathlib import Path
+          archive=Path('/tmp/spelunkyds-v1.zip')
+          assert archive.stat().st_size==614327, 'Unexpected Spelunky release archive size'
+          with zipfile.ZipFile(archive) as z:
+              games=[name for name in z.namelist() if name.lower().endswith('.nds')]
+              assert len(games)==1, f'Unexpected ROMs in upstream release: {games}'
+              data=z.read(games[0])
+          assert len(data)>200000, 'Empty or invalid Spelunky game'
+          Path('games/ds-homebrew/spelunky-ds.nds').write_bytes(data)
+          PY
+      - name: Validate built games
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          for name in ('kart-mania.nds', 'spelunky-ds.nds'):
+              file=Path('games/ds-homebrew')/name
+              header=file.read_bytes()[:512]
+              assert file.stat().st_size>200000 and any(header), f'Invalid DS binary: {name}'
+          for name in ('KartMania-MIT.txt','SpelunkyDS-Full-License.txt'):
+              assert (Path('games/ds-homebrew/licenses')/name).stat().st_size>500
+          print('Racing and platformer DS ROMs and notices validated')
+          PY
+      - name: Commit game binaries and license notices
+        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add games/ds-homebrew/kart-mania.nds games/ds-homebrew/spelunky-ds.nds \
+            games/ds-homebrew/licenses/KartMania-MIT.txt \
+            games/ds-homebrew/licenses/SpelunkyDS-Full-License.txt
+          if ! git diff --cached --quiet; then
+            git commit -m 'Install Kart Mania and Spelunky DS homebrew'
+            git pull --rebase origin main
+            git push origin HEAD:main
+          fi

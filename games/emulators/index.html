@@ -45,8 +45,8 @@
   <header><a href="../../index.html#library">← PLAYSTACK</a><span>EMULATOR HUB</span></header>
   <main id="setup">
     <p class="eyebrow">Retro games · Your files</p>
-    <h1>Pick a system. Load your game.</h1>
-    <p>Playstack provides the emulator, not commercial games. Select a game file you own and have permission to use. Files are selected locally; no game ROMs are bundled or uploaded by this page.</p>
+    <h1>Pick a game or load your own.</h1>
+    <p>Playstacking includes a few free, redistributable DS homebrew games below. You can also load a game file you own and have permission to use. Commercial game ROMs are not bundled.</p>
     <div class="panel">
       <label for="system">Console
         <select id="system"></select>
@@ -62,8 +62,8 @@
       <p id="status" role="status" aria-live="polite">Select a game file to continue.</p>
     </div>
     <section class="panel" id="included-ds" aria-labelledby="included-heading" hidden>
-      <h2 id="included-heading">Included DS homebrew games</h2>
-      <p class="fine">Choose a free homebrew title. The game files are hosted by Playstacking, with source credits and licenses below. You don't need to upload anything.</p>
+      <h2 id="included-heading">Nintendo DS games — play instantly</h2>
+      <p class="fine">Try the full games first: Kart Mania or Spelunky DS. Playstacking hosts their licensed homebrew releases. The buttons load them without an upload.</p>
       <div id="included-list" class="included-grid"></div>
       <p class="fine">DS compatibility is not yet confirmed across browsers. If a game doesn't start, use the regular file loader above.</p>
     </section>
@@ -86,6 +86,8 @@
       nes:{name:"Nintendo Entertainment System",core:"nes",ext:["nes","zip"]}
     };
     const builtInGames = {
+      kart:{name:"Kart Mania",path:"../ds-homebrew/kart-mania.nds",description:"Nintendo DS kart racing and time trials. Single-player mode; browser multiplayer unverified.",source:"https://github.com/Bahey-shalash/Kart_Mania",license:"MIT"},
+      spelunky:{name:"Spelunky DS (fan-made)",path:"../ds-homebrew/spelunky-ds.nds",description:"Cave-exploration platformer. Unofficial DS adaptation of Spelunky.",source:"https://github.com/dbeef/spelunky-ds",license:"GPL-3.0 code / Spelunky User License v1.1b assets"},
       pong:{name:"Pong DS",path:"../ds-homebrew/pong-nds.nds",description:"Classic paddle game against the computer.",source:"https://github.com/Chi-Iroh/Pong-NDS",license:"MIT"},
       wordle:{name:"Wordle DS",path:"../ds-homebrew/wordle-ds.nds",description:"Word-guessing puzzle adapted for Nintendo DS.",source:"https://github.com/Epicpkmn11/WordleDS",license:"GPL-3.0"}
     };
