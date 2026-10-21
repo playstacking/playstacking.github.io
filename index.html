@@ -57,6 +57,17 @@
       <p>Hosted open-source games: <a href="games/shapez/index.html">shapez</a> and <a href="games/openttd/index.html">OpenTTD</a>.</p>
     </section>
 
+    <section class="emulator-spotlight" id="ds-games" aria-labelledby="ds-games-title">
+      <p class="eyebrow">&mdash; NOW INCLUDED &middot; NINTENDO DS HOMEBREW</p>
+      <h2 id="ds-games-title">DS GAMES READY TO LAUNCH</h2>
+      <p>These are open-source homebrew games with Nintendo DS builds. No ROM upload is required.</p>
+      <div class="emulator-grid">
+        <a href="games/emulators/index.html?system=nds&amp;game=pong">Pong DS &#8594;</a>
+        <a href="games/emulators/index.html?system=nds&amp;game=wordle">Wordle DS &#8594;</a>
+      </div>
+      <p>Not commercial Nintendo games. Credits and licenses appear in the DS launcher. Browser compatibility is still being tested.</p>
+    </section>
+
     <section class="library" id="library">
       <div class="library-head"><div><p class="eyebrow">&mdash; THE GOOD STUFF</p><h2>Pick your next obsession.</h2></div><label class="search">&#8981; <input id="search" placeholder="Search games..." aria-label="Search games"></label></div>
       <div class="filters" id="filters"></div>
@@ -99,12 +110,12 @@
       "games/shapez/index.html","games/openttd/index.html",
       "games/supertuxkart/index.html","games/lazy-chess/index.html"
     ]);
-    if(!fullPage.has(target))return;
+    if(!fullPage.has(target) && !target.startsWith("games/emulators/index.html?system=nds&game="))return;
     event.preventDefault();
     event.stopImmediatePropagation();
     location.assign(new URL(target,document.baseURI).href);
   },true);
   </script>
-  <script src="app.js?v=22"></script>
+  <script src="app.js?v=23"></script>
 </body>
 </html>
