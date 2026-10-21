@@ -29,7 +29,7 @@ jobs:
         run: |
           set -euo pipefail
           npm ci --legacy-peer-deps
-          ./node_modules/.bin/ionic-app-scripts build --prod
+          NODE_OPTIONS='--max-old-space-size=5120' ./node_modules/.bin/ionic-app-scripts build
           test -s www/index.html
       - name: Install static web build
         run: |
