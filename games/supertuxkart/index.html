@@ -1,1 +1,34 @@
-<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>SuperTuxKart - Playstack</title><style>body{margin:0;display:grid;place-items:center;min-height:100dvh;background:#111722;color:#fff;font:16px system-ui}main{max-width:550px;padding:28px}h1{font-size:2.5rem}p{line-height:1.6;color:#cad1dc}button{background:#66d999;border:0;border-radius:9px;padding:15px 24px;font-weight:700;cursor:pointer}a{color:#9bdaff}#status{font-size:14px}</style><main><h1>SuperTuxKart</h1><p>Experimental WebAssembly racing port</p><p>The browser port needs approximately 120 MB of assets and 500 MB of memory. iPad compatibility is unverified.</p><button id="start">Launch experimental build</button><p id="status" role="status">The experimental browser build is installed, but gameplay is unverified on this device.</p><p><a href="https://github.com/ading2210/stk-code/tree/wasm" target="_blank" rel="noopener">Open-source project details</a></p></main><script>document.getElementById('start').onclick=async()=>{const status=document.getElementById('status');status.textContent='Checking locally hosted game files…';try{const res=await fetch('../supertuxkart-build/index.html',{cache:'no-store'});if(!res.ok)throw Error('Game build not deployed');const html=await res.text();if(!html.toLowerCase().includes('<html'))throw Error('Invalid game entry page');location.replace('../supertuxkart-build/index.html')}catch(e){status.textContent='The installed build could not be loaded. Check the deployed files and browser compatibility.'}}</script></html>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>SuperTuxKart · Playstack</title>
+  <style>
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100dvh;display:grid;place-items:center;background:#111722;color:#f6f8fa;font:16px system-ui}
+    main{width:min(680px,100%);padding:28px}
+    h1{font-size:clamp(2.1rem,6vw,3.2rem);margin:.2em 0}
+    p{color:#bdc9d5;line-height:1.6}
+    button{background:#65d99c;padding:13px 20px;border:0;border-radius:9px;color:#11221a;font:700 1rem system-ui;cursor:pointer}
+    button:disabled{opacity:.6;cursor:wait}
+    a{color:#92e7b6}
+    .eyebrow{color:#83e9b7;font-size:.8rem;letter-spacing:.12em;text-transform:uppercase}
+    .small{font-size:.9rem}
+    #status{min-height:1.5em}
+  </style>
+</head>
+<body>
+  <main>
+    <a href="../../index.html#library">← Back to Playstack</a>
+    <p class="eyebrow">Experimental kart racing</p>
+    <h1>SuperTuxKart</h1>
+    <p>A local WebAssembly build and racing assets are installed, but its original browser port remains experimental.</p>
+    <button id="launch" type="button" data-game-entry="../supertuxkart-build/index.html" data-requires="../supertuxkart-build/index.html,../supertuxkart-build/script.js,../supertuxkart-build/game/supertuxkart.js,../supertuxkart-build/game/supertuxkart.wasm,../supertuxkart-build/game/data_low.tar.gz.manifest,../supertuxkart-build/game/data_low.tar.gz.00">Launch experimental build</button>
+    <p id="status" role="status" aria-live="polite">Game asset check available.</p>
+    <p class="small">About 120 MB of initial assets and 500 MB of memory are needed. Some graphics and networking functionality may not work.</p>
+    <p class="small"><a href="../supertuxkart-build/index.html">Open the build directly</a> · <a href="https://github.com/ading2210/stk-code/tree/wasm" target="_blank" rel="noopener noreferrer">Original project</a></p>
+  </main>
+  <script src="../launch-check.js?v=2"></script>
+</body>
+</html>

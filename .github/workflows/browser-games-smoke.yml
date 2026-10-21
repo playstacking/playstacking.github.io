@@ -1,0 +1,23 @@
+name: Playstack browser game static checks
+on:
+  pull_request:
+    paths:
+      - index.html
+      - games/launch-check.js
+      - games/shapez/**
+      - games/openttd/**
+      - games/supertuxkart/**
+      - games/lazy-chess/**
+      - tests/game-launch.test.cjs
+      - .github/workflows/browser-games-smoke.yml
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: node tests/game-launch.test.cjs
