@@ -1,7 +1,7 @@
 const games=[
 {"title":"Astral Shipwright","category":"Simulation","description":"Unreal shipbuilding game. Source lacks game content; desktop only.","url":"games/astral-shipwright/index.html","source":"games/astral-shipwright/index.html","icon":"AS","color":"blue","tag":"Source only"},
 {"title":"Endless Sky","category":"Adventure","description":"Open-source space game; browser port not installed.","url":"games/endless-sky/index.html","source":"games/endless-sky/index.html","icon":"ES","color":"blue","tag":"Desktop source"},
-{"title":"Lazy Chess","category":"Strategy","description":"Open-source chess puzzle game with a locally installed browser build.","url":"games/lazy-chess/index.html","source":"https://github.com/cinqmarsmedia/Lazy-Chess-An-Indie-Chess-Puzzle-Game","icon":"LC","color":"blue","tag":"Browser build installed"},
+{"title":"Lazy Chess","category":"Strategy","description":"Open-source puzzle chess with an installed browser build.","url":"games/lazy-chess/index.html","source":"games/lazy-chess/index.html","icon":"LC","color":"blue","tag":"Browser build installed"},
 {"title":"OpenTTD","category":"Strategy","description":"Open-source transport simulation with a locally deployed WebAssembly build.","url":"games/openttd/index.html","source":"games/openttd/index.html","icon":"TTD","color":"blue","tag":"Web build installed"},
 {"title":"Solaris","category":"Strategy","description":"Online galaxy strategy requires a separate server and database.","url":"games/solaris/index.html","source":"games/solaris/index.html","icon":"SL","color":"blue","tag":"Backend needed"},
 {"title":"SuperTuxKart (Experimental)","category":"Racing","description":"Experimental WebAssembly racing port with locally hosted build assets; device compatibility is unverified.","url":"games/supertuxkart/index.html","source":"games/supertuxkart/index.html","icon":"ST","color":"blue","tag":"Experimental · Build installed"},
@@ -121,7 +121,7 @@ const categories=["All","Popular","Emulators","Multiplayer","Arcade","Puzzle","A
 let category="All",query="",favorites=JSON.parse(localStorage.getItem("playstack-favorites")||"[]").filter(title=>games.some(game=>game.title===title)),favoritesOnly=false;
 localStorage.setItem("playstack-favorites",JSON.stringify(favorites));
 const $=id=>document.getElementById(id);
-function launch(url,title,source){const standalone=["games/shapez/","games/openttd/","games/supertuxkart/","games/lazy-chess/","games/emulators/"];if(standalone.some(path=>url.startsWith(path))){location.assign(new URL(url,document.baseURI).href);return}const player=$("player");const minecraft=title==="Minecraft Web";$("player-title").textContent=title||"Game";const link=$("source-link");link.hidden=minecraft;link.style.display=minecraft?"none":"";link.href=minecraft?"#":(source||url);const frame=$("game-frame");frame.src=url;player.showModal();document.body.classList.add("player-open")}
+function launch(url,title,source){const player=$("player");const minecraft=title==="Minecraft Web";$("player-title").textContent=title||"Game";const link=$("source-link");link.hidden=minecraft;link.style.display=minecraft?"none":"";link.href=minecraft?"#":(source||url);const frame=$("game-frame");frame.src=url;player.showModal();document.body.classList.add("player-open")}
 function closePlayer(){const player=$("player");player.close();$("game-frame").src="about:blank";document.body.classList.remove("player-open")}
 async function toggleFullscreen(){
   if(document.fullscreenElement||document.webkitFullscreenElement){
