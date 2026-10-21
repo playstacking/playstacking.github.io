@@ -1,0 +1,26 @@
+name: Game launcher build checks
+on:
+  pull_request:
+    paths:
+      - app.js
+      - games/lazy-chess/**
+      - games/lazy-chess-build/**
+      - games/shapez/**
+      - games/openttd/**
+      - games/supertuxkart/**
+      - games/supertuxkart-build/**
+      - tests/game-builds.test.js
+      - .github/workflows/game-build-checks.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  game-assets:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node tests/game-builds.test.js
+      - run: node --input-type=module --check < games/supertuxkart-build/script.js
