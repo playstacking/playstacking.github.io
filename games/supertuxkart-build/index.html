@@ -45,10 +45,10 @@
         position: absolute;
         top: 50%;
         left: 50%;
-        width: 450px;
-        height: 290px;
-        margin-left: -220px;
-        margin-top: -145px;
+        width: min(450px, calc(100vw - 24px));
+        max-height: calc(100dvh - 24px);
+        margin: 0;
+        transform: translate(-50%, -50%);
         z-index: 2;
         background-color: white;
         padding: 12px;
@@ -89,6 +89,7 @@
       <p>There is a 120MB initial download required to play, and the game will require around 500MB of memory.</p>
       <p>This web port was made by <a href="https://github.com/ading2210/">ading2210</a>, and the source code is located at <a href="https://github.com/ading2210/stk-code/tree/wasm">github.com/ading2210/stk-code</a>.</p>  
       <p>If you want to check on the status of this port, take a look at the <a href="https://github.com/supertuxkart/stk-code/pull/5106/">corresponding pull request</a> in the SuperTuxKart repository.</p>
+      <p><a href="../../index.html#library">&#8592; Back to Playstack</a></p>
       <label for="quality_select">Texture quality:</label>
       <select name="quality_select" id="quality_select" style="margin: 0px;">
         <option value="low">Low (120MiB)</option>
