@@ -104,35 +104,31 @@ async function write_db_chunks(key, data) {
 }
 
 async function download_chunks(url) {
-  let path = url.split("/");
-  let filename = path.pop();
-  let base_url = path.join("/");
-
+  const baseUrl = url.slice(0, url.lastIndexOf("/") + 1);
+  const filename = url.slice(url.lastIndexOf("/") + 1);
   status_text.textContent = `Downloading manifest for ${filename}...`;
-  let r1 = await fetch(url + ".manifest");
-  let manifest = (await r1.text()).split("\n");
-  let size = parseInt(manifest.shift());
-  manifest.pop();
-
-  let offset = 0;
-  let chunk = null;
-  let array = new Uint8Array(size);
-  let chunk_count = manifest.length;
-  let current_chunk = 1;
-
-  while (chunk = manifest.shift()) {
-    let mb_progress = Math.floor(offset / (1024 ** 2))
-    let mb_total = Math.floor(size / (1024 ** 2))
-    status_text.textContent = `Downloading ${filename}... (chunk ${current_chunk}/${chunk_count}, ${mb_progress}/${mb_total}MiB)`;
-
-    let r2 = await fetch(base_url + "/" + chunk);
-    let buffer = await r2.arrayBuffer();
-    let chunk_array = new Uint8Array(buffer);
-    array.set(chunk_array, offset);
-    offset += chunk_array.length;  
-    current_chunk++;
+  const manifestResponse = await fetch(url + ".manifest");
+  if (!manifestResponse.ok) throw new Error("Asset manifest HTTP " + manifestResponse.status);
+  const [sizeLine, ...lines] = (await manifestResponse.text()).trim().split(/\r?\n/);
+  const totalSize = Number(sizeLine);
+  const chunkNames = lines.filter(Boolean);
+  if (!Number.isSafeInteger(totalSize) || totalSize < 1 || totalSize > 250_000_000 || !chunkNames.length) {
+    throw new Error("Invalid asset manifest");
   }
-
+  const array = new Uint8Array(totalSize);
+  let offset = 0;
+  for (let i = 0; i < chunkNames.length; i++) {
+    const chunk = chunkNames[i];
+    if (!/^data_(?:low|mid|high)\.tar\.gz\.\d+$/.test(chunk)) throw new Error("Invalid asset chunk name");
+    status_text.textContent = "Downloading " + filename + " (part " + (i + 1) + "/" + chunkNames.length + ")...";
+    const response = await fetch(baseUrl + chunk);
+    if (!response.ok) throw new Error("Asset chunk HTTP " + response.status + ": " + chunk);
+    const bytes = new Uint8Array(await response.arrayBuffer());
+    if (offset + bytes.length > totalSize) throw new Error("Asset size mismatch");
+    array.set(bytes, offset);
+    offset += bytes.length;
+  }
+  if (offset !== totalSize) throw new Error("Incomplete asset download");
   return array.buffer;
 }
 
@@ -234,19 +230,23 @@ async function main() {
 }
 
 async function start_game() {
-  status_text.textContent = "Loading game files...";
   start_button.disabled = true;
-  await load_data();
-  await wait_for_frame();
-  status_text.textContent = "Launching game...";
-
-  await wait_for_frame();
-  run();
-  info_container.style.zIndex = 0;
-  info_container.style.display = "none";
-  sync_idbfs();
-
-  console.warn("Warning: Opening devtools may harm the game's performance.");
+  try {
+    status_text.textContent = "Loading game files...";
+    await load_data();
+    await wait_for_frame();
+    status_text.textContent = "Launching game...";
+    await wait_for_frame();
+    run();
+    info_container.style.zIndex = 0;
+    info_container.style.display = "none";
+    sync_idbfs();
+    console.warn("Warning: Opening devtools may harm the game's performance.");
+  } catch (error) {
+    console.error("SuperTuxKart failed to start", error);
+    status_text.textContent = "Game failed to load: " + (error?.message || "unknown error") + ". Check storage space and reload.";
+    start_button.disabled = false;
+  }
 }
 
 Module["canvas"] = document.getElementById("canvas")
@@ -256,7 +256,10 @@ globalThis.load_idbfs = load_idbfs;
 
 let poll_runtime_interval = setInterval(() => {
   if (globalThis.ready) {
-    main();
     clearInterval(poll_runtime_interval);
+    main().catch(error => {
+      console.error("SuperTuxKart initialization failed", error);
+      status_text.textContent = "Initialization failed. Browser storage or WASM runtime may be unavailable.";
+    });
   }
 }, 100);
