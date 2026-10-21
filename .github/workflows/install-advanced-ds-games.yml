@@ -31,6 +31,12 @@ jobs:
       - name: Compile original Kart Mania game using devkitPro
         run: |
           set -euo pipefail
+          # The upstream Makefile predates libnds 2.0's Calico integration.
+          # Keep these compatibility edits local to the CI checkout.
+          sed -i 's|-DARM9|-DARM9 -D__NDS__ -I$(DEVKITPRO)/calico/include|' upstream-kart/Makefile
+          sed -i 's|-specs=ds_arm9.specs|-specs=$(DEVKITPRO)/calico/share/ds9.specs|' upstream-kart/Makefile
+          sed -i 's|-lnds9 -lm|-lnds9 -lcalico_ds9 -lm|' upstream-kart/Makefile
+          sed -i 's|LIBDIRS.*:=.*$(LIBNDS)|LIBDIRS := $(LIBNDS) $(DEVKITPRO)/calico|' upstream-kart/Makefile
           docker run --rm -v "$GITHUB_WORKSPACE":/workspace -w /workspace/upstream-kart \
             -e DEVKITPRO=/opt/devkitpro -e DEVKITARM=/opt/devkitpro/devkitARM \
             devkitpro/devkitarm:latest make -j2
