@@ -41,6 +41,23 @@ jobs:
           # Browser users only get local time-trial racing; WiFi is unsupported.
           sed -i 's/Wifi_Update();/(void)0;/' upstream-kart/source/network/multiplayer.c
           sed -i 's/Wifi_GetData(WIFIGETDATA_MACADDRESS, 6, macAddr);/memset(macAddr, 0, sizeof(macAddr));/' upstream-kart/source/network/multiplayer.c
+          # Legacy dswifi scanning APIs were removed in libnds 2.0. The web
+          # emulator has no compatible DS local-WiFi transport, so compile an
+          # explicit offline-only adapter rather than pretending multiplayer works.
+          cat > upstream-kart/source/network/WiFi_minilib.c <<'EOF'
+          #include "WiFi_minilib.h"
+          int initWiFi(void) { return 0; }
+          int openSocket(void) { return 0; }
+          int receiveData(char* data_buff, int bytes) { (void)data_buff; (void)bytes; return -1; }
+          int sendData(char* data_buff, int bytes) { (void)data_buff; (void)bytes; return -1; }
+          void closeSocket(void) {}
+          void disconnectFromWiFi(void) {}
+          void getReceiveDebugStats(int* calls, int* success, int* filtered) {
+              if(calls) *calls=0;
+              if(success) *success=0;
+              if(filtered) *filtered=0;
+          }
+          EOF
           docker run --rm -v "$GITHUB_WORKSPACE":/workspace -w /workspace/upstream-kart \
             -e DEVKITPRO=/opt/devkitpro -e DEVKITARM=/opt/devkitpro/devkitARM \
             devkitpro/devkitarm:latest make -j2
