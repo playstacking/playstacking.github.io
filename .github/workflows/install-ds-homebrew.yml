@@ -1,0 +1,64 @@
+name: Install licensed Nintendo DS homebrew games
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/install-ds-homebrew.yml
+permissions:
+  contents: write
+concurrency:
+  group: playstack-ds-homebrew
+  cancel-in-progress: false
+jobs:
+  install:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download pinned open-source DS games and their licenses
+        run: |
+          set -euo pipefail
+          mkdir -p games/ds-homebrew/licenses
+          curl --fail --location --retry 3 --silent --show-error \
+            'https://raw.githubusercontent.com/Chi-Iroh/Pong-NDS/dfabbdde030b9fb2c72af968c98485dcde81855f/Pong-NDS.nds' \
+            --output games/ds-homebrew/pong-nds.nds
+          curl --fail --location --retry 3 --silent --show-error \
+            'https://raw.githubusercontent.com/Chi-Iroh/Pong-NDS/dfabbdde030b9fb2c72af968c98485dcde81855f/LICENSE' \
+            --output games/ds-homebrew/licenses/Pong-NDS-MIT.txt
+          curl --fail --location --retry 3 --silent --show-error \
+            'https://github.com/Epicpkmn11/WordleDS/releases/download/v3.2.3/WordleDS.nds' \
+            --output games/ds-homebrew/wordle-ds.nds
+          curl --fail --location --retry 3 --silent --show-error \
+            'https://raw.githubusercontent.com/Epicpkmn11/WordleDS/v3.2.3/LICENSE.txt' \
+            --output games/ds-homebrew/licenses/WordleDS-GPL-3.0.txt
+      - name: Validate expected game files and checksums
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib
+          root=Path('games/ds-homebrew')
+          pong=(root/'pong-nds.nds').read_bytes()
+          wordle=(root/'wordle-ds.nds').read_bytes()
+          assert len(pong)==2472960, f"Unexpected Pong build: {len(pong)}"
+          assert len(wordle)==978880, f"Unexpected Wordle build: {len(wordle)}"
+          assert hashlib.sha256(wordle).hexdigest()=='cdbf18af105abfb00c699cff1b95de48d781468a3b52aeb3bb5a431e603b7075'
+          for name,data in [('Pong',pong),('Wordle',wordle)]:
+            assert len(data)>512 and any(data[:512]), name+' is not a DS binary'
+          for p in (root/'licenses').glob('*'):
+            assert p.stat().st_size>100, f"Missing license: {p}"
+          print('License and Nintendo DS file checks passed.')
+          PY
+      - name: Commit games to GitHub Pages source
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add games/ds-homebrew/*.nds games/ds-homebrew/licenses
+          if ! git diff --cached --quiet; then
+            git commit -m 'Install licensed Pong DS and Wordle DS homebrew builds'
+            git pull --rebase origin main
+            git push origin HEAD:main
+          fi
