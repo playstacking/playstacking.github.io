@@ -1,0 +1,22 @@
+name: Playstack emulator smoke checks
+on:
+  pull_request:
+    paths:
+      - app.js
+      - index.html
+      - games/emulators/**
+      - games/n64-loader/**
+      - tests/emulator-hub.test.js
+      - .github/workflows/emulator-hub-checks.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: node tests/emulator-hub.test.js
