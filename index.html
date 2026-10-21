@@ -88,6 +88,23 @@
     location.assign(new URL(game.getAttribute('data-launch'), document.baseURI).href);
   }, true);
   </script>
-  <script src="app.js?v=20"></script>
+  <script>
+  // Run heavier built games outside of the site's iframe for full browser
+  // resources and reliable keyboard / controller focus.
+  document.addEventListener("click", function (event) {
+    const element=event.target.closest("[data-launch]");
+    if (!element) return;
+    const target=element.getAttribute("data-launch");
+    const fullPage=new Set([
+      "games/shapez/index.html","games/openttd/index.html",
+      "games/supertuxkart/index.html","games/lazy-chess/index.html"
+    ]);
+    if(!fullPage.has(target))return;
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    location.assign(new URL(target,document.baseURI).href);
+  },true);
+  </script>
+  <script src="app.js?v=21"></script>
 </body>
 </html>
