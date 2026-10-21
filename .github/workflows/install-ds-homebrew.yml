@@ -2,6 +2,7 @@ name: Install licensed Nintendo DS homebrew games
 on:
   workflow_dispatch:
   push:
+    branches: [main]
     paths:
       - .github/workflows/install-ds-homebrew.yml
 permissions:
@@ -11,6 +12,7 @@ concurrency:
   cancel-in-progress: false
 jobs:
   install:
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
