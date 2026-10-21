@@ -65,12 +65,12 @@ jobs:
           docker run --rm -v "$GITHUB_WORKSPACE":/workspace -w /workspace/upstream-kart \
             -e DEVKITPRO=/opt/devkitpro -e DEVKITARM=/opt/devkitpro/devkitARM \
             devkitpro/devkitarm:latest make -j1
-          find upstream-kart -maxdepth 1 -name '*.nds' -type f -size +100k
+          find upstream-kart/build -maxdepth 1 -name '*.nds' -type f -size +100k
       - name: Download stable DS Spelunky build and verify licenses
         run: |
           set -euo pipefail
           mkdir -p games/ds-homebrew/licenses
-          cp "$(find upstream-kart -maxdepth 1 -name '*.nds' -type f -print -quit)" games/ds-homebrew/kart-mania.nds
+          cp "$(find upstream-kart/build -maxdepth 1 -name '*.nds' -type f -print -quit)" games/ds-homebrew/kart-mania.nds
           curl -fLsS --retry 3 \
             'https://raw.githubusercontent.com/Bahey-shalash/Kart_Mania/dbd9b747dd0701d89a97a3c3f08625170b1b95e6/LICENSE' \
             -o games/ds-homebrew/licenses/KartMania-MIT.txt
