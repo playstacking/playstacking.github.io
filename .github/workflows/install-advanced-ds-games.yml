@@ -48,6 +48,8 @@ jobs:
           # explicit offline-only adapter rather than pretending multiplayer works.
           cat > upstream-kart/source/network/WiFi_minilib.c <<'EOF'
           #include "WiFi_minilib.h"
+          bool socket_opened = false;
+          bool WiFi_initialized = false;
           int initWiFi(void) { return 0; }
           int openSocket(void) { return 0; }
           int receiveData(char* data_buff, int bytes) { (void)data_buff; (void)bytes; return -1; }
