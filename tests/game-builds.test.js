@@ -6,9 +6,11 @@ const exists = p => assert.ok(fs.statSync(p).size > 0, "Missing or empty: " + p)
 
 const app=read("app.js");
 new vm.Script(app,{filename:"app.js"});
-for(const name of ["games/shapez/","games/openttd/","games/supertuxkart/","games/lazy-chess/","games/emulators/"]){
-  assert.ok(app.includes(name), "Game should launch in its own tab: "+name);
+const homepage=read("index.html");
+for(const entry of ["shapez","openttd","supertuxkart","lazy-chess"]){
+  assert.ok(homepage.includes('"games/'+entry+'/index.html"'), "Homepage should route games to full-page launchers: "+entry);
 }
+assert.ok(homepage.includes('games/emulators/index.html?system=nds'),"Emulators must remain linked on homepage");
 for(const [entry,target] of [
   ["shapez","shapez-build"],
   ["openttd","openttd-build"],
