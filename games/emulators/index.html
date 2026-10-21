@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="referrer" content="no-referrer">
+  <meta name="color-scheme" content="dark">
+  <title>Emulator Hub · Playstack</title>
+  <style>
+    :root{color-scheme:dark;font:16px system-ui,sans-serif;background:#0f1522;color:#f3f7ff}
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100dvh}
+    header{display:flex;align-items:center;justify-content:space-between;padding:14px max(18px,4vw);border-bottom:1px solid #273247}
+    a{color:#97e6be}
+    header a{text-decoration:none;font-weight:700}
+    main{max-width:850px;margin:0 auto;padding:32px 20px}
+    h1{font-size:clamp(2rem,5vw,3rem);margin:0 0 12px}
+    p{line-height:1.6;color:#c5d0df}
+    .eyebrow{color:#8eeab7;text-transform:uppercase;font-size:.8rem;letter-spacing:.13em}
+    .panel{border:1px solid #314158;border-radius:18px;background:#192337;padding:24px;display:grid;gap:20px}
+    label{display:grid;gap:10px;font-weight:650}
+    select,input[type=file]{width:100%;font:inherit;color:inherit;background:#101b2c;border:1px solid #4b6078;border-radius:10px;padding:12px}
+    button{border:0;background:#88e4b0;color:#10251a;font:700 1rem system-ui;border-radius:10px;padding:14px 20px;cursor:pointer}
+    button:disabled{opacity:.55;cursor:not-allowed}
+    button:focus-visible,select:focus-visible,input:focus-visible,a:focus-visible{outline:3px solid #c8ffd8;outline-offset:3px}
+    #status{min-height:1.5rem;margin:0}
+    .fine{font-size:.9rem;color:#a7b7ca}
+    .hidden,[hidden]{display:none!important}
+    #running{max-width:none;padding:10px}
+    #game{width:100%;min-height:calc(100dvh - 105px);background:#070a10}
+    .playing-bar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:6px 10px 12px}
+    .playing-bar button{padding:9px 15px}
+  </style>
+</head>
+<body>
+  <header><a href="../../index.html#library">← PLAYSTACK</a><span>EMULATOR HUB</span></header>
+  <main id="setup">
+    <p class="eyebrow">Retro games · Your files</p>
+    <h1>Pick a system. Load your game.</h1>
+    <p>Playstack provides the emulator, not commercial games. Select a game file you own and have permission to use. Files are selected locally; no game ROMs are bundled or uploaded by this page.</p>
+    <div class="panel">
+      <label for="system">Console
+        <select id="system"></select>
+      </label>
+      <label for="rom">Choose your game file
+        <input id="rom" type="file">
+      </label>
+      <label for="bios" id="bios-row" hidden>Optional BIOS file (some PS1 titles require this)
+        <input id="bios" type="file" accept=".bin,.rom">
+      </label>
+      <p class="fine" id="format"></p>
+      <button type="button" id="launch" disabled>Launch emulator</button>
+      <p id="status" role="status" aria-live="polite">Select a game file to continue.</p>
+    </div>
+    <p class="fine">Emulation uses the official EmulatorJS stable CDN and requires an internet connection for the engine. Game compatibility and speed vary, especially for Nintendo 64 and PSP. For disc-based games, a single .chd or .pbp image is preferable to multi-file tracks.</p>
+    <p class="fine"><a href="https://emulatorjs.org/" rel="noopener noreferrer" target="_blank">About EmulatorJS</a> · <a href="../../index.html#library">Back to the game library</a></p>
+  </main>
+  <section id="running" hidden aria-label="Game emulator">
+    <div class="playing-bar"><strong id="running-title">Emulator</strong><button id="change-game" type="button">Choose another game</button></div>
+    <div id="game"></div>
+  </section>
+  <script>
+    "use strict";
+    const systems = {
+      n64:{name:"Nintendo 64",core:"n64",ext:["z64","n64","v64","zip"]},
+      nds:{name:"Nintendo DS",core:"nds",ext:["nds","zip"]},
+      gba:{name:"Game Boy Advance",core:"gba",ext:["gba","zip"]},
+      psx:{name:"PlayStation 1",core:"psx",ext:["chd","pbp","bin","iso","zip"],bios:true},
+      psp:{name:"PSP (experimental)",core:"psp",ext:["iso","cso","pbp","zip"]},
+      snes:{name:"Super Nintendo",core:"snes",ext:["sfc","smc","zip"]},
+      nes:{name:"Nintendo Entertainment System",core:"nes",ext:["nes","zip"]}
+    };
+    const el = id => document.getElementById(id);
+    const select=el("system"),rom=el("rom"),bios=el("bios"),launch=el("launch"),status=el("status");
+    let activeUrls=[];
+    for (const [code,system] of Object.entries(systems)) {
+      const option=document.createElement("option");
+      option.value=code;option.textContent=system.name;select.appendChild(option);
+    }
+    const requested=new URLSearchParams(location.search).get("system");
+    if(requested && Object.hasOwn(systems,requested))select.value=requested;
+    function change(){
+      const system=systems[select.value];
+      rom.accept=system.ext.map(ext=>"."+ext).join(",");
+      el("format").textContent="Supported selections: "+system.ext.map(ext=>"."+ext).join(", ")+". Only choose files you are authorized to use.";
+      el("bios-row").hidden=!system.bios;
+      rom.value="";bios.value="";launch.disabled=true;
+      status.textContent="Select a game file to continue.";
+      history.replaceState(null,"",location.pathname+"?system="+encodeURIComponent(select.value));
+    }
+    select.addEventListener("change",change);
+    rom.addEventListener("change",()=>{
+      launch.disabled=!rom.files.length;
+      status.textContent=rom.files.length?"Ready to launch your own file.":"Select a game file to continue.";
+    });
+    change();
+    function releaseUrls(){for(const url of activeUrls)URL.revokeObjectURL(url);activeUrls=[];}
+    window.addEventListener("pagehide",releaseUrls);
+    el("change-game").addEventListener("click",()=>location.assign(location.pathname+"?system="+encodeURIComponent(select.value)));
+    launch.addEventListener("click",()=>{
+      const system=systems[select.value],file=rom.files[0];
+      if(!file)return;
+      const ext=file.name.split(".").pop().toLowerCase();
+      if(!system.ext.includes(ext)){status.textContent="Wrong file format for "+system.name+".";return;}
+      if(!file.size || file.size>1073741824){status.textContent="Choose a nonempty game file smaller than 1 GB.";return;}
+      launch.disabled=true;
+      status.textContent="Loading emulator engine…";
+      const gameUrl=URL.createObjectURL(file);
+      activeUrls.push(gameUrl);
+      window.EJS_player="#game";
+      window.EJS_core=system.core;
+      window.EJS_gameUrl=gameUrl;
+      window.EJS_gameName=file.name;
+      window.EJS_pathtodata="https://cdn.emulatorjs.org/stable/data/";
+      window.EJS_color="#86e3b0";
+      window.EJS_ready=()=>{status.textContent="Emulator loaded.";};
+      if(system.bios && bios.files.length){
+        const biosUrl=URL.createObjectURL(bios.files[0]);
+        activeUrls.push(biosUrl);
+        window.EJS_biosUrl=biosUrl;
+      }
+      el("setup").hidden=true;
+      el("running").hidden=false;
+      el("running-title").textContent=system.name+" · "+file.name;
+      const script=document.createElement("script");
+      script.src=window.EJS_pathtodata+"loader.js";
+      script.onerror=()=>{
+        el("running").hidden=true;
+        el("setup").hidden=false;
+        launch.disabled=false;
+        status.textContent="The emulator engine could not load. Check your network or try again.";
+        releaseUrls();
+      };
+      document.body.appendChild(script);
+    });
+  </script>
+</body>
+</html>
