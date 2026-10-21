@@ -1,0 +1,120 @@
+name: Build and install advanced DS homebrew games
+on:
+  pull_request:
+    paths:
+      - .github/workflows/install-advanced-ds-games.yml
+      - games/emulators/index.html
+      - games/ds-homebrew/README.md
+      - tests/advanced-ds.test.cjs
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/install-advanced-ds-games.yml
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: playstack-advanced-ds-games
+  cancel-in-progress: false
+jobs:
+  install:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          repository: Bahey-shalash/Kart_Mania
+          ref: dbd9b747dd0701d89a97a3c3f08625170b1b95e6
+          path: upstream-kart
+          persist-credentials: false
+      - name: Compile original Kart Mania game using devkitPro
+        run: |
+          set -euo pipefail
+          # The upstream Makefile predates libnds 2.0's Calico integration.
+          # Keep these compatibility edits local to the CI checkout.
+          sed -i 's|-DARM9|-DARM9 -D__NDS__ -I$(DEVKITPRO)/calico/include|' upstream-kart/Makefile
+          sed -i 's|-specs=ds_arm9.specs|-specs=$(DEVKITPRO)/calico/share/ds9.specs|' upstream-kart/Makefile
+          sed -i 's|-lnds9 -lm|-lnds9 -lcalico_ds9 -lm|' upstream-kart/Makefile
+          sed -i 's|LIBDIRS.*:=.*$(LIBNDS)|LIBDIRS := $(LIBNDS) $(DEVKITPRO)/calico|' upstream-kart/Makefile
+          # libnds 2 moved the WiFi update loop and MAC query APIs.
+          # Browser users only get local time-trial racing; WiFi is unsupported.
+          sed -i 's/Wifi_Update();/(void)0;/' upstream-kart/source/network/multiplayer.c
+          sed -i 's/Wifi_Update();/(void)0;/' upstream-kart/source/core/main.c
+          sed -i 's/Wifi_GetData(WIFIGETDATA_MACADDRESS, 6, macAddr);/memset(macAddr, 0, sizeof(macAddr));/' upstream-kart/source/ui/multiplayer_lobby.c
+          sed -i 's/Wifi_GetData(WIFIGETDATA_MACADDRESS, 6, macAddr);/memset(macAddr, 0, sizeof(macAddr));/' upstream-kart/source/network/multiplayer.c
+          # Legacy dswifi scanning APIs were removed in libnds 2.0. The web
+          # emulator has no compatible DS local-WiFi transport, so compile an
+          # explicit offline-only adapter rather than pretending multiplayer works.
+          cat > upstream-kart/source/network/WiFi_minilib.c <<'EOF'
+          #include "WiFi_minilib.h"
+          bool socket_opened = false;
+          bool WiFi_initialized = false;
+          int initWiFi(void) { return 0; }
+          int openSocket(void) { return 0; }
+          int receiveData(char* data_buff, int bytes) { (void)data_buff; (void)bytes; return -1; }
+          int sendData(char* data_buff, int bytes) { (void)data_buff; (void)bytes; return -1; }
+          void closeSocket(void) {}
+          void disconnectFromWiFi(void) {}
+          void getReceiveDebugStats(int* calls, int* success, int* filtered) {
+              if(calls) *calls=0;
+              if(success) *success=0;
+              if(filtered) *filtered=0;
+          }
+          EOF
+          docker run --rm -v "$GITHUB_WORKSPACE":/workspace -w /workspace/upstream-kart \
+            -e DEVKITPRO=/opt/devkitpro -e DEVKITARM=/opt/devkitpro/devkitARM \
+            devkitpro/devkitarm:latest make -j1
+          find upstream-kart/build -maxdepth 1 -name '*.nds' -type f -size +100k
+      - name: Download stable DS Spelunky build and verify licenses
+        run: |
+          set -euo pipefail
+          mkdir -p games/ds-homebrew/licenses
+          cp "$(find upstream-kart/build -maxdepth 1 -name '*.nds' -type f -print -quit)" games/ds-homebrew/kart-mania.nds
+          curl -fLsS --retry 3 \
+            'https://raw.githubusercontent.com/Bahey-shalash/Kart_Mania/dbd9b747dd0701d89a97a3c3f08625170b1b95e6/LICENSE' \
+            -o games/ds-homebrew/licenses/KartMania-MIT.txt
+          curl -fLsS --retry 3 \
+            'https://github.com/dbeef/spelunky-ds/releases/download/1.0/spelunkyds.nds.zip' \
+            -o /tmp/spelunkyds-v1.zip
+          curl -fLsS --retry 3 \
+            'https://raw.githubusercontent.com/dbeef/spelunky-ds/1.0/LICENSE' \
+            -o games/ds-homebrew/licenses/SpelunkyDS-Full-License.txt
+          python3 - <<'PY'
+          import zipfile
+          from pathlib import Path
+          archive=Path('/tmp/spelunkyds-v1.zip')
+          assert archive.stat().st_size==614327, 'Unexpected Spelunky release archive size'
+          with zipfile.ZipFile(archive) as z:
+              games=[name for name in z.namelist() if name.lower().endswith('.nds')]
+              assert len(games)==1, f'Unexpected ROMs in upstream release: {games}'
+              data=z.read(games[0])
+          assert len(data)>200000, 'Empty or invalid Spelunky game'
+          Path('games/ds-homebrew/spelunky-ds.nds').write_bytes(data)
+          PY
+      - name: Validate built games
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          for name in ('kart-mania.nds', 'spelunky-ds.nds'):
+              file=Path('games/ds-homebrew')/name
+              header=file.read_bytes()[:512]
+              assert file.stat().st_size>200000 and any(header), f'Invalid DS binary: {name}'
+          for name in ('KartMania-MIT.txt','SpelunkyDS-Full-License.txt'):
+              assert (Path('games/ds-homebrew/licenses')/name).stat().st_size>500
+          print('Racing and platformer DS ROMs and notices validated')
+          PY
+      - name: Commit game binaries and license notices
+        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add games/ds-homebrew/kart-mania.nds games/ds-homebrew/spelunky-ds.nds \
+            games/ds-homebrew/licenses/KartMania-MIT.txt \
+            games/ds-homebrew/licenses/SpelunkyDS-Full-License.txt
+          if ! git diff --cached --quiet; then
+            git commit -m 'Install Kart Mania and Spelunky DS homebrew'
+            git pull --rebase origin main
+            git push origin HEAD:main
+          fi
